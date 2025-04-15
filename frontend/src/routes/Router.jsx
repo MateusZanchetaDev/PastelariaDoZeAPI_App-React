@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import PrivateRoute from "./PrivateRoute";
 
 // Lazy Loading para otimização (code-splitting) - Os componentes das páginas foram carregados de forma assíncrona usando React.lazy.
 const LoginForm = lazy(() => import("../pages/LoginForm"));
@@ -20,18 +21,21 @@ const AppRoutes = () => {
     return (
         // O componente Suspense foi adicionado ao redor do Routes para exibir um fallback (<Loading />) enquanto os componentes são carregados.
         // O fallback é exibido enquanto os componentes carregados com React.lazy estão sendo baixados.
-        
+
         <Suspense fallback={<Loading />}>
             <Routes>
                 <Route path="/" element={<Navigate to="/login" replace />} />
+
                 <Route path="/login" element={<LoginForm />} />
-                <Route path="/home" element={<Home />} />
+
+                <Route path="/home" element={<PrivateRoute> <Home /> </PrivateRoute>} />
                 <Route path="/funcionarios" element={<FuncionarioList />} />
                 <Route path="/funcionario" element={<FuncionarioForm />} />
                 <Route path="/clientes" element={<ClienteList />} />
                 <Route path="/cliente" element={<ClienteForm />} />
                 <Route path="/produtos" element={<ProdutoList />} />
                 <Route path="/produto" element={<ProdutoForm />} />
+                
                 <Route path="*" element={<NotFound />} />
             </Routes>
         </Suspense>
