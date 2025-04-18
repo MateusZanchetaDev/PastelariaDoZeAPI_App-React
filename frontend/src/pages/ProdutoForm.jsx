@@ -39,6 +39,9 @@ const ProdutoForm = () => {
                     {...register('nome', { required: 'Nome é obrigatório' })}
                     error={!!errors.nome}
                     helperText={errors.nome?.message}
+                    inputProps={{
+                        maxLength: 100,
+                    }}
                 />
 
                 {/* Descrição */}
@@ -49,6 +52,9 @@ const ProdutoForm = () => {
                     {...register('descricao', { required: 'Descrição é obrigatória' })}
                     error={!!errors.descricao}
                     helperText={errors.descricao?.message}
+                    inputProps={{
+                        maxLength: 200,
+                    }}
                 />
 
                 {/* Valor Unitário com máscara */}

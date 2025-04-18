@@ -23,6 +23,9 @@ const ClienteForm = () => {
                     {...register('nome', { required: 'Nome é obrigatório' })}
                     error={!!errors.nome}
                     helperText={errors.nome?.message}
+                    inputProps={{
+                        maxLength: 100,
+                    }}
                 />
 
                 {/* CPF com máscara */}

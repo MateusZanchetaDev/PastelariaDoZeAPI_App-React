@@ -33,6 +33,9 @@ const FuncionarioForm = () => {
                             margin="normal"
                             error={!!errors.nome}
                             helperText={errors.nome?.message}
+                            inputProps={{
+                                maxLength: 100,
+                            }}
                         />
                     )}
                 />
