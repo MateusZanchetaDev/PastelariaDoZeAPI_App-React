@@ -77,17 +77,3 @@ def delete_produto():
     response_data, status_code = Funcoes.make_api_request('delete', f"{API_ENDPOINT_PRODUTO}{id_produto}")
     # retorna o json da resposta da API externa
     return jsonify(response_data), status_code
-
-
-# Rota para Validar se CPF já existe (GET)
-@bp_produto.route('/cpf', methods=['GET'])
-def validate_cpf():
-    # obtém o CPF a partir dos parâmetros de consulta da URL
-    cpf = request.args.get('cpf')
-    # valida se o CPF foi passado na URL
-    if not cpf:
-        return jsonify({"error": "O parâmetro 'cpf' é obrigatório"}), 400
-    # chama a função para fazer a requisição à API externa
-    response_data, status_code = Funcoes.make_api_request('get', f"{API_ENDPOINT_PRODUTO}cpf/{cpf}")
-    # retorna o json da resposta da API externa
-    return jsonify(response_data), status_code
