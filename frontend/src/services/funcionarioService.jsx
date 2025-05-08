@@ -31,3 +31,8 @@ export const deleteFuncionario = async (id) => {
   const response = await axios.delete(`${PROXY_URL}`, { params: { id_funcionario: id } });
   return response.data;
 };
+
+export const getFuncionarioByCPF = async (cpf) => {
+  const response = await axios.get(`${PROXY_URL}cpf`, { params: { cpf } });
+  return response.data[0]; // supondo que retorna um único funcionário
+};

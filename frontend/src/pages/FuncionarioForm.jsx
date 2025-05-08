@@ -6,6 +6,7 @@ import { createFuncionario, updateFuncionario, getFuncionarioById } from '../ser
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from 'react-toastify';
 import '../styles/FuncionarioForm.css';
+import { getFuncionarioByCPF } from '../services/funcionarioService';
 
 const FuncionarioForm = () => {
 
@@ -13,6 +14,57 @@ const FuncionarioForm = () => {
     const navigate = useNavigate();
     const { control, handleSubmit, reset, formState: { errors } } = useForm();
     const isReadOnly = opr === 'view';
+
+    const showCPFExistenteToast = (funcionario, onEdit, onView) => {
+        toast(
+            <Box>
+                <Typography variant="subtitle1">
+                    O CPF já está cadastrado para <strong>{funcionario.nome}</strong>.
+                </Typography>
+                <Box sx={{ mt: 1, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                    <Button variant="contained" color="primary" size="small" onClick={() => { toast.dismiss(); onEdit(); }}>
+                        Editar
+                    </Button>
+                    <Button variant="outlined" color="secondary" size="small" onClick={() => { toast.dismiss(); onView(); }}>
+                        Visualizar
+                    </Button>
+                    <Button variant="outlined" color="error" size="small" onClick={() => { toast.dismiss(); onCancel(); }}>
+                        Cancelar
+                    </Button>
+                </Box>
+            </Box>,
+            {
+                position: "top-center",
+                autoClose: false,
+                closeOnClick: false,
+                draggable: false,
+                closeButton: false,
+            }
+        );
+    };
+
+    const handleCPF = async (cpfDigitado) => {
+        if (!cpfDigitado || opr === 'view') return;
+
+        try {
+            const funcionarioExistente = await getFuncionarioByCPF(cpfDigitado);
+
+            if (funcionarioExistente) {
+                const idExistente = funcionarioExistente.id_funcionario;
+
+                if (idExistente && (!id || parseInt(id) !== idExistente)) {
+                    showCPFExistenteToast(funcionarioExistente,
+                        () => navigate(`/funcionario/edit/${idExistente}`),
+                        () => navigate(`/funcionario/view/${idExistente}`),
+                        () => navigate('/funcionarios')
+                    );
+                }
+            }
+        } catch (error) {
+            console.error("Erro ao verificar CPF:", error);
+            toast.error("Erro ao verificar CPF existente.");
+        }
+    };
 
     let title;
     if (opr === 'view') {
@@ -78,17 +130,20 @@ const FuncionarioForm = () => {
                 {/* CPF com máscara */}
                 <Controller name="cpf" control={control} defaultValue="" rules={{ required: "CPF é obrigatório" }}
                     render={({ field }) => (
-                        <TextField {...field} disabled={isReadOnly} label="CPF" fullWidth margin="normal" error={!!errors.cpf} helperText={errors.cpf?.message}
+                        <TextField
+                            {...field}
+                            disabled={isReadOnly}
+                            label="CPF"
+                            fullWidth
+                            margin="normal"
+                            error={!!errors.cpf}
+                            helperText={errors.cpf?.message}
+                            onBlur={() => handleCPF(field.value)} // <-- validação aqui
                             InputProps={{
-                                // Define o IMaskInputWrapper como o componente de entrada
                                 inputComponent: IMaskInputWrapper,
                                 inputProps: {
                                     mask: "000.000.000-00",
-                                    // O regex [0-9] ou \d aceita apenas números de 0 a 9
-                                    definitions: {
-                                        "0": /\d/,
-                                    },
-                                    // Retorna apenas os números no valor
+                                    definitions: { "0": /\d/ },
                                     unmask: true,
                                 },
                             }}
