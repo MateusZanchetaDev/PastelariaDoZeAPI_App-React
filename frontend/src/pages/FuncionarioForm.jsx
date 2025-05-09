@@ -122,11 +122,28 @@ const FuncionarioForm = () => {
                     </Typography>
                 )}
 
-                <Controller name="nome" control={control} defaultValue="" rules={{ required: "Nome é obrigatório" }}
+                <Controller
+                    name="nome"
+                    control={control}
+                    defaultValue=""
+                    rules={{
+                        required: "Nome é obrigatório",
+                        maxLength: { value: 100, message: "Máximo de 100 caracteres" }
+                    }}
                     render={({ field }) => (
-                        <TextField {...field} disabled={isReadOnly} label="Nome" fullWidth margin="normal" error={!!errors.nome} helperText={errors.nome?.message} />
+                        <TextField
+                            {...field}
+                            disabled={isReadOnly}
+                            label="Nome"
+                            fullWidth
+                            margin="normal"
+                            error={!!errors.nome}
+                            helperText={errors.nome?.message}
+                            inputProps={{ maxLength: 100 }}
+                        />
                     )}
                 />
+
                 {/* CPF com máscara */}
                 <Controller name="cpf" control={control} defaultValue="" rules={{ required: "CPF é obrigatório" }}
                     render={({ field }) => (
@@ -151,32 +168,57 @@ const FuncionarioForm = () => {
                     )}
                 />
 
-                <Controller name="matricula" control={control} defaultValue="" rules={{ required: "Matrícula é obrigatória" }}
+                <Controller
+                    name="matricula"
+                    control={control}
+                    defaultValue=""
+                    rules={{
+                        required: "Matrícula é obrigatória",
+                        maxLength: { value: 10, message: "Máximo de 10 caracteres" }
+                    }}
+                    render={({ field }) => (
+                        <TextField
+                            {...field}
+                            disabled={isReadOnly}
+                            label="Matrícula"
+                            fullWidth
+                            margin="normal"
+                            error={!!errors.matricula}
+                            helperText={errors.matricula?.message}
+                            inputProps={{ maxLength: 10 }}
+                        />)} />
 
-                    render={({ field }) => (
-                        <TextField {...field} disabled={isReadOnly} label="Matrícula" fullWidth margin="normal" error={!!errors.matricula} helperText={errors.matricula?.message} />
-                    )}
-                />
                 {/* Telefone com máscara */}
-                <Controller name="telefone" control={control} defaultValue=""
+                <Controller
+                    name="telefone"
+                    control={control}
+                    defaultValue=""
+                    rules={{
+                        required: "Telefone é obrigatório"
+                    }}
                     render={({ field }) => (
-                        <TextField {...field} disabled={isReadOnly} label="Telefone" fullWidth margin="normal" error={!!errors.telefone} helperText={errors.telefone?.message}
+                        <TextField
+                            {...field}
+                            disabled={isReadOnly}
+                            label="Telefone"
+                            fullWidth
+                            margin="normal"
+                            error={!!errors.telefone}
+                            helperText={errors.telefone?.message}
                             InputProps={{
-                                // Define o IMaskInputWrapper como o componente de entrada
                                 inputComponent: IMaskInputWrapper,
                                 inputProps: {
                                     mask: "(00) 00000.0000",
-                                    // O regex [0-9] ou \d aceita apenas números de 0 a 9
                                     definitions: {
                                         "0": /\d/,
                                     },
-                                    // Retorna apenas os números no valor
                                     unmask: true,
                                 },
                             }}
                         />
                     )}
                 />
+                
                 <Controller name="senha" control={control} defaultValue="" rules={{ required: "Senha obrigatória", minLength: { value: 6, message: "Pelo menos 6 caracteres" } }}
                     render={({ field }) => (
                         <TextField {...field} disabled={isReadOnly} label="Senha" type="password" fullWidth margin="normal" error={!!errors.senha} helperText={errors.senha?.message} />
