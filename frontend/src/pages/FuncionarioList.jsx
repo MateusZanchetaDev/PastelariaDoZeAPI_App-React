@@ -1,16 +1,18 @@
-import React, { use, useEffect, useState } from "react";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Toolbar, Typography, IconButton, Button, useMediaQuery, } from '@mui/material';
+import React, { useEffect, useState } from "react";
+import {
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    Paper, Toolbar, Typography, IconButton, Button, useMediaQuery,
+} from '@mui/material';
 import { Edit, Delete, Visibility, FiberNew } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { getFuncionarios, deleteFuncionario } from '../services/funcionarioService';
 import { toast } from 'react-toastify';
 import { useTheme } from '@mui/material/styles';
-import '../styles/FuncionarioList.css'
+import '../styles/FuncionarioList.css';
 
 function FuncionarioList() {
 
     const navigate = useNavigate();
-
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
     const [funcionarios, setFuncionarios] = useState([]);
@@ -26,7 +28,7 @@ function FuncionarioList() {
         } catch (error) {
             console.error('Erro ao buscar funcionários:', error);
         }
-    }
+    };
 
     const handleDeleteClick = (funcionario) => {
         toast(
@@ -58,9 +60,18 @@ function FuncionarioList() {
         }
     };
 
+    const formatCPF = (cpf) => {
+        if (!cpf || cpf.length !== 11) return cpf;
+        return cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
+    };
+
+    const formatTelefone = (telefone) => {
+        if (!telefone || telefone.length !== 11) return telefone;
+        return telefone.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+    };
+
     return (
         <TableContainer className="Funcionario-Table" component={Paper}>
-
             <Toolbar sx={{ backgroundColor: '#ADD8E6', padding: 2, borderRadius: 1, mb: 2, display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant="h6" color="primary">Funcionários</Typography>
                 <Button color="primary" onClick={() => navigate('/funcionario')} startIcon={<FiberNew />}>Novo</Button>
@@ -87,21 +98,18 @@ function FuncionarioList() {
                         <TableRow key={funcionario.id_funcionario}>
                             <TableCell>{funcionario.id_funcionario}</TableCell>
                             <TableCell>{funcionario.nome}</TableCell>
-                            <TableCell>{funcionario.cpf}</TableCell>
-                            {/* conforme o tamanho da tela, define o que renderizar */}
+                            <TableCell>{formatCPF(funcionario.cpf)}</TableCell>
                             {!isSmallScreen && (
                                 <>
                                     <TableCell>{funcionario.matricula}</TableCell>
-                                    <TableCell>{funcionario.telefone}</TableCell>
+                                    <TableCell>{formatTelefone(funcionario.telefone)}</TableCell>
                                     <TableCell>{funcionario.grupo}</TableCell>
                                 </>
                             )}
                             <TableCell>
-                                {/* executa a rota, passando o opr view e o id selecionado */}
                                 <IconButton onClick={() => navigate(`/funcionario/view/${funcionario.id_funcionario}`)}>
                                     <Visibility color="primary" />
                                 </IconButton>
-                                {/* executa a rota, passando o opr edit e o id selecionado */}
                                 <IconButton onClick={() => navigate(`/funcionario/edit/${funcionario.id_funcionario}`)}>
                                     <Edit color="secondary" />
                                 </IconButton>
@@ -114,7 +122,7 @@ function FuncionarioList() {
                 </TableBody>
             </Table>
         </TableContainer>
-
     );
 }
+
 export default FuncionarioList;
