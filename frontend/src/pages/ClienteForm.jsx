@@ -56,7 +56,7 @@ const ClienteForm = () => {
                     showCPFExistenteToast(clienteExistente,
                         () => navigate(`/cliente/edit/${idExistente}`),
                         () => navigate(`/cliente/view/${idExistente}`),
-                        () => navigate('/cliente')
+                        () => navigate('/clientes')
                     );
                 }
             }

@@ -77,3 +77,11 @@ def delete_cliente():
     response_data, status_code = Funcoes.make_api_request('delete', f"{API_ENDPOINT_CLIENTE}{id_cliente}")
     # retorna o json da resposta da API externa
     return jsonify(response_data), status_code
+
+@bp_cliente.route('/cpf', methods=['GET'])
+def validate_cpf():
+    cpf = request.args.get('cpf')
+    if not cpf:
+        return jsonify({"error": "O parâmetro 'cpf' é obrigatório"}), 400
+    response_data, status_code = Funcoes.make_api_request('get', f"{API_ENDPOINT_CLIENTE}cpf/{cpf}")
+    return jsonify(response_data), status_code
