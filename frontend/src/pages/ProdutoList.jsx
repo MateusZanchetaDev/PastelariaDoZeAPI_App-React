@@ -7,6 +7,9 @@ import { Edit, Delete, Visibility, FiberNew } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useTheme } from '@mui/material/styles';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import { PictureAsPdf } from '@mui/icons-material';
 import { getProdutos, deleteProduto } from '../services/produtoService';
 import '../styles/ProdutoList.css';
 
@@ -61,11 +64,104 @@ function ProdutoList() {
         }
     };
 
+    const generatePDF = () => {
+        const doc = new jsPDF();
+
+        doc.setFontSize(18);
+        doc.setTextColor(30, 30, 30);
+        doc.text("Lista de Produtos", 14, 22);
+
+        const isSmallScreen = window.innerWidth < 600;
+        const tableColumn = isSmallScreen
+            ? ["ID", "Nome"]
+            : ["ID", "Nome", "Descrição", "Valor Unitário", "Foto"];
+
+        const tableRows = [];
+
+        produtos.forEach(produto => {
+            if (isSmallScreen) {
+                tableRows.push([produto.id_produto, produto.nome]);
+            } else {
+                tableRows.push([
+                    produto.id_produto,
+                    produto.nome,
+                    produto.descricao || "",
+                    `R$ ${Number(produto.valor_unitario).toFixed(2)}`,
+                    produto.foto ? produto.foto : null
+                ]);
+            }
+        });
+
+        let startY = 30;
+
+        if (isSmallScreen) {
+            doc.autoTable({
+                startY,
+                head: [tableColumn],
+                body: tableRows,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [173, 216, 230],
+                    textColor: [0, 0, 0],
+                    halign: 'center',
+                    fontStyle: 'bold',
+                },
+                styles: {
+                    fontSize: 10,
+                    cellPadding: 10,
+                    textColor: [30, 30, 30],
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245],
+                },
+            });
+        } else {
+            doc.autoTable({
+                startY,
+                head: [tableColumn],
+                body: tableRows.map(row => row.slice(0, 4)),
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [173, 216, 230],
+                    textColor: [0, 0, 0],
+                    halign: 'center',
+                    fontStyle: 'bold',
+                },
+                styles: {
+                    fontSize: 12,
+                    cellPadding: { top: 12, bottom: 12, left: 12, right: 6 },
+                    textColor: [30, 30, 30],
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245],
+                },
+                didDrawCell: (data) => {
+                    if (data.column.index === 4 && data.cell.section === 'body') {
+                        const fotoBase64 = tableRows[data.row.index][4];
+                        if (fotoBase64) {
+                            const x = data.cell.x + 3;
+                            const y = data.cell.y + 4;
+                            const imgWidth = 22;
+                            const imgHeight = 22;
+                            doc.addImage(`data:image/jpeg;base64,${fotoBase64}`, 'JPEG', x, y, imgWidth, imgHeight);
+                        } else {
+                            doc.text('Sem imagem', data.cell.x + 2, data.cell.y + 12);
+                        }
+                    }
+                }
+            });
+        }
+
+        doc.save("produtos.pdf");
+    };
+
+
     return (
         <TableContainer className="Produto-Table" component={Paper}>
             <Toolbar sx={{ backgroundColor: '#ADD8E6', padding: 2, borderRadius: 1, mb: 2, display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant="h6" color="primary">Produtos</Typography>
                 <Button color="primary" onClick={() => navigate('/produto')} startIcon={<FiberNew />}>Novo</Button>
+                <Button color="primary" onClick={generatePDF} startIcon={<PictureAsPdf />}> Exportar PDF </Button>
             </Toolbar>
 
             <Table>

@@ -5,6 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import { getClientes, deleteCliente } from '../services/clienteService';
 import { toast } from 'react-toastify';
 import { useTheme } from '@mui/material/styles';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import { PictureAsPdf } from '@mui/icons-material';
 import '../styles/ClienteList.css';
 
 function ClienteList() {
@@ -66,11 +69,61 @@ function ClienteList() {
         return telefone.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
     };
 
+    const generatePDF = () => {
+        const doc = new jsPDF();
+
+        doc.setFontSize(20);
+        doc.setTextColor('#003366'); 
+        doc.text('Lista de Clientes', 14, 22);
+
+        const tableColumn = isSmallScreen
+            ? ['ID', 'Nome', 'CPF']
+            : ['ID', 'Nome', 'CPF', 'Telefone'];
+
+        const tableRows = clientes.map(cliente => {
+            const row = [
+                cliente.id_cliente,
+                cliente.nome,
+                formatCPF(cliente.cpf),
+            ];
+
+            if (!isSmallScreen) {
+                row.push(formatTelefone(cliente.telefone));
+            }
+
+            return row;
+        });
+
+        doc.autoTable({
+            head: [tableColumn],
+            body: tableRows,
+            startY: 30,
+            theme: 'grid',
+            headStyles: {
+                fillColor: '#ADD8E6',  
+                textColor: '#003366',  
+                halign: 'center',
+                fontStyle: 'bold',
+            },
+            styles: {
+                fontSize: 11,
+                cellPadding: 5,
+                textColor: '#222',
+            },
+            alternateRowStyles: {
+                fillColor: '#F0F8FF',
+            },
+        });
+
+        doc.save('clientes.pdf');
+    };
+
     return (
         <TableContainer className="Cliente-Table" component={Paper}>
             <Toolbar sx={{ backgroundColor: '#ADD8E6', padding: 2, borderRadius: 1, mb: 2, display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant="h6" color="primary">Clientes</Typography>
                 <Button color="primary" onClick={() => navigate('/cliente')} startIcon={<FiberNew />}>Novo</Button>
+                <Button color="primary" onClick={generatePDF} startIcon={<PictureAsPdf />}> Exportar PDF </Button>
             </Toolbar>
 
             <Table>

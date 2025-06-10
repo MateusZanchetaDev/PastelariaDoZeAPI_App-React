@@ -7,6 +7,9 @@ import { Edit, Delete, Visibility, FiberNew } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { getFuncionarios, deleteFuncionario } from '../services/funcionarioService';
 import { toast } from 'react-toastify';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import { useTheme } from '@mui/material/styles';
 import '../styles/FuncionarioList.css';
 
@@ -70,11 +73,63 @@ function FuncionarioList() {
         return telefone.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
     };
 
+    const generatePDF = () => {
+        const doc = new jsPDF();
+
+        doc.setFontSize(18);
+        doc.setTextColor(30, 30, 30);
+        doc.text('Lista de Funcionários', 14, 22);
+
+        const tableColumn = isSmallScreen
+            ? ['ID', 'Nome', 'CPF']
+            : ['ID', 'Nome', 'CPF', 'Matrícula', 'Telefone', 'Grupo'];
+
+        const tableRows = funcionarios.map(func => {
+            const row = [
+                func.id_funcionario,
+                func.nome,
+                formatCPF(func.cpf),
+            ];
+
+            if (!isSmallScreen) {
+                row.push(
+                    func.matricula,
+                    formatTelefone(func.telefone),
+                    func.grupo
+                );
+            }
+
+            return row;
+        });
+
+        doc.autoTable({
+            head: [tableColumn],
+            body: tableRows,
+            startY: 30,
+            theme: 'grid',
+            headStyles: {
+                fillColor: [173, 216, 230],
+                textColor: [0, 0, 0],
+                halign: 'center',
+            },
+            styles: {
+                fontSize: 10,
+                cellPadding: 4,
+            },
+            alternateRowStyles: {
+                fillColor: [245, 245, 245],
+            },
+        });
+
+        doc.save('funcionarios.pdf');
+    };
+
     return (
         <TableContainer className="Funcionario-Table" component={Paper}>
             <Toolbar sx={{ backgroundColor: '#ADD8E6', padding: 2, borderRadius: 1, mb: 2, display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant="h6" color="primary">Funcionários</Typography>
                 <Button color="primary" onClick={() => navigate('/funcionario')} startIcon={<FiberNew />}>Novo</Button>
+                <Button color="primary" onClick={generatePDF} startIcon={<PictureAsPdfIcon />}> Exportar PDF </Button>
             </Toolbar>
 
             <Table>
