@@ -12,6 +12,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { useTheme } from '@mui/material/styles';
 import '../styles/FuncionarioList.css';
+import { Box } from '@mui/material';
 
 function FuncionarioList() {
 
@@ -27,7 +28,11 @@ function FuncionarioList() {
     const fetchFuncionarios = async () => {
         try {
             const data = await getFuncionarios();
-            setFuncionarios(data);
+
+            // se o retorno for [resultado, status]
+            const resultado = Array.isArray(data) && data.length === 2 ? data[0] : data;
+
+            setFuncionarios(resultado);
         } catch (error) {
             console.error('Erro ao buscar funcionários:', error);
         }
@@ -73,7 +78,7 @@ function FuncionarioList() {
         return telefone.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
     };
 
-    const generatePDF = () => {
+    const GeradorPDF = () => {
         const doc = new jsPDF();
 
         doc.setFontSize(18);
@@ -126,10 +131,12 @@ function FuncionarioList() {
 
     return (
         <TableContainer className="Funcionario-Table" component={Paper}>
-            <Toolbar sx={{ backgroundColor: '#ADD8E6', padding: 2, borderRadius: 1, mb: 2, display: 'flex', justifyContent: 'space-between' }}>
+            <Toolbar sx={{ backgroundColor: '#ADD8E6', padding: 2, borderRadius: 1, mb: 2, display: 'flex', justifyContent: 'space-between', }}>
                 <Typography variant="h6" color="primary">Funcionários</Typography>
-                <Button color="primary" onClick={() => navigate('/funcionario')} startIcon={<FiberNew />}>Novo</Button>
-                <Button color="primary" onClick={generatePDF} startIcon={<PictureAsPdfIcon />}> Exportar PDF </Button>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button color="primary" onClick={() => navigate('/funcionario')} startIcon={<FiberNew />}> Novo </Button>
+                    <Button color="primary" onClick={GeradorPDF} startIcon={<PictureAsPdfIcon />}> Exportar PDF </Button>
+                </Box>
             </Toolbar>
 
             <Table>

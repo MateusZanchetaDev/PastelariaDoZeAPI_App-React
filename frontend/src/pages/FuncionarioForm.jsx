@@ -90,23 +90,29 @@ const FuncionarioForm = () => {
 
     const onSubmit = async (data) => {
         try {
-            let retorno;
+            let retornoArray;
             if (id) {
-                retorno = await updateFuncionario(id, data);
+                retornoArray = await updateFuncionario(id, data);
             } else {
-                retorno = await createFuncionario(data);
+                retornoArray = await createFuncionario(data);
             }
+
+            // Pega o objeto do primeiro elemento
+            const retorno = retornoArray[0];
+
+            console.log('Resposta formatada:', retorno);
 
             if (!retorno || !retorno.id) {
                 throw new Error(retorno.erro || "Erro ao salvar funcionário.");
             }
+
             toast.success(`Funcionário salvo com sucesso. ID: ${retorno.id}`, { position: "top-center" });
             navigate('/funcionarios');
         } catch (error) {
             toast.error(`Erro ao salvar funcionário: \n${error.message}`, { position: "top-center" });
         }
     };
-
+    
     return (
         <Box className="FuncionarioForm-Container" component="form" onSubmit={handleSubmit(onSubmit)} sx={{ backgroundColor: '#ADD8E6', padding: 2, borderRadius: 1, mt: 2 }}>
 
@@ -218,7 +224,7 @@ const FuncionarioForm = () => {
                         />
                     )}
                 />
-                
+
                 <Controller name="senha" control={control} defaultValue="" rules={{ required: "Senha obrigatória", minLength: { value: 6, message: "Pelo menos 6 caracteres" } }}
                     render={({ field }) => (
                         <TextField {...field} disabled={isReadOnly} label="Senha" type="password" fullWidth margin="normal" error={!!errors.senha} helperText={errors.senha?.message} />

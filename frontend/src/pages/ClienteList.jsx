@@ -9,6 +9,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { PictureAsPdf } from '@mui/icons-material';
 import '../styles/ClienteList.css';
+import { Box } from '@mui/material';
 
 function ClienteList() {
     const navigate = useNavigate();
@@ -22,8 +23,12 @@ function ClienteList() {
 
     const fetchClientes = async () => {
         try {
-            const data = await getClientes();
-            setClientes(data);
+            const data = await getClientes(); // sua função que chama a API
+
+            // se o retorno for um array [resultado, status], pegue só o resultado
+            const resultado = Array.isArray(data) && data.length === 2 ? data[0] : data;
+
+            setClientes(resultado);
         } catch (error) {
             console.error('Erro ao buscar clientes:', error);
         }
@@ -69,11 +74,11 @@ function ClienteList() {
         return telefone.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
     };
 
-    const generatePDF = () => {
+    const GeradorPDF = () => {
         const doc = new jsPDF();
 
         doc.setFontSize(20);
-        doc.setTextColor('#003366'); 
+        doc.setTextColor('#003366');
         doc.text('Lista de Clientes', 14, 22);
 
         const tableColumn = isSmallScreen
@@ -100,8 +105,8 @@ function ClienteList() {
             startY: 30,
             theme: 'grid',
             headStyles: {
-                fillColor: '#ADD8E6',  
-                textColor: '#003366',  
+                fillColor: '#ADD8E6',
+                textColor: '#003366',
                 halign: 'center',
                 fontStyle: 'bold',
             },
@@ -120,10 +125,12 @@ function ClienteList() {
 
     return (
         <TableContainer className="Cliente-Table" component={Paper}>
-            <Toolbar sx={{ backgroundColor: '#ADD8E6', padding: 2, borderRadius: 1, mb: 2, display: 'flex', justifyContent: 'space-between' }}>
+            <Toolbar sx={{ backgroundColor: '#ADD8E6', padding: 2, borderRadius: 1, mb: 2, display: 'flex', justifyContent: 'space-between', }}>
                 <Typography variant="h6" color="primary">Clientes</Typography>
-                <Button color="primary" onClick={() => navigate('/cliente')} startIcon={<FiberNew />}>Novo</Button>
-                <Button color="primary" onClick={generatePDF} startIcon={<PictureAsPdf />}> Exportar PDF </Button>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button color="primary" onClick={() => navigate('/cliente')} startIcon={<FiberNew />}> Novo </Button>
+                    <Button color="primary" onClick={GeradorPDF} startIcon={<PictureAsPdf />}> Exportar PDF </Button>
+                </Box>
             </Toolbar>
 
             <Table>

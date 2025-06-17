@@ -77,29 +77,35 @@ const ClienteForm = () => {
 
     useEffect(() => {
         if (id) {
-
             const fetchCliente = async () => {
                 const data = await getClienteById(id);
-
-                reset(data);
+                if (Array.isArray(data)) {
+                    reset(data[0]);
+                } else {
+                    reset(data);
+                }
             };
-
             fetchCliente();
+        } else {
+            reset({});
         }
     }, [id, reset]);
 
     const onSubmit = async (data) => {
         try {
-            let retorno;
+            let retornoArray;
             if (id) {
-                retorno = await updateCliente(id, data);
+                retornoArray = await updateCliente(id, data);
             } else {
-                retorno = await createCliente(data);
+                retornoArray = await createCliente(data);
             }
+
+            const retorno = Array.isArray(retornoArray) ? retornoArray[0] : retornoArray;
 
             if (!retorno || !retorno.id) {
                 throw new Error(retorno.erro || "Erro ao salvar cliente.");
             }
+
             toast.success(`Cliente salvo com sucesso. ID: ${retorno.id}`, { position: "top-center" });
             navigate('/clientes');
         } catch (error) {

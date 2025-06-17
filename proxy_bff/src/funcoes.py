@@ -25,40 +25,44 @@ class Funcoes(object):
         
     @staticmethod
     def make_api_request(method, url, data=None, params=None):
-            
-        # verifica se tem um token dentro da validade
-        if Funcoes.validar_token() == False:
+        if not Funcoes.validar_token():
             return {'error': 'Falha ao obter token de autenticação'}, 500
 
-        # monta o cabeçalho da requisição, com o token obtido
-        headers = {
-            'Authorization': f'Bearer {session["access_token"]}',
-            'accept': 'application/json',
-        }
-            
         try:
-            logging.info(f"Realizando requisição: {method.upper()} {url}")
-                
-            # realiza o request na API externa, utilizando o método, url, cabeçalho, dados e parâmetros fornecidos
-            response = requests.request(method, url, headers=headers, json=data, params=params, verify=API_SSL_VERIFY)
+            token = session.get("access_token")
+            if not token:
+                return {'error': 'Token de autenticação não encontrado na sessão'}, 401
 
-            # quando a requisição é bem-sucedida (status 200-299): O método não faz nada e o código continua normalmente.
-            # quando a requisição falha (status fora de 200-299): Ele lança uma exceção requests.exceptions.HTTPError.
+            headers = {
+                'Authorization': f'Bearer {token}',
+                'accept': 'application/json',
+            }
+
+            logging.info(f"Realizando requisição: {method.upper()} {url}")
+            response = requests.request(method, url, headers=headers, json=data, params=params, verify=API_SSL_VERIFY)
             response.raise_for_status()
 
-            # monta o json com os dados retornados
-            result = response.json()
-                
-            # nossa a api retorna um array json, no qual o primeiro elemento é o resultado e o segundo elemento é o status_code
-            return result[0] if response.content else {}, response.status_code
-            
-        except Exception as e:
-            msg = f"Erro inesperado ao processar requisição para API externa: {e}"
-            # Se a exceção for do tipo HTTPError, pode-se acessar o código de status e a mensagem de erro
-            if isinstance(e, requests.exceptions.HTTPError):
-                msg = f"Erro HTTP: {e.response.status_code} - {e.response.text}"
-            elif isinstance(e, requests.exceptions.RequestException):
-                msg = f"Erro de conexão/requisição com a API externa: {e}"
+            # Tratar respostas com JSON esperado
+            if response.status_code in (200, 201):
+                try:
+                    result = response.json()
+                except ValueError:
+                    result = {}  # Resposta vazia ou não JSON
+            elif response.status_code == 204:
+                result = {}  # No Content, sucesso mas sem corpo
+            else:
+                result = {}
+
+            return result, response.status_code
+
+        except requests.exceptions.HTTPError as e:
+            status_code = e.response.status_code if e.response else 500
+            msg = f"Erro HTTP: {status_code} - {e.response.text if e.response else str(e)}"
+            logging.error(msg)
+            return {'error': msg}, status_code
+
+        except requests.exceptions.RequestException as e:
+            msg = f"Erro de conexão/requisição com a API externa: {e}"
             logging.error(msg)
             return {'error': msg}, 500
         

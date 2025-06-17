@@ -20,6 +20,9 @@ API_URL = os.getenv('API_URL', 'https://127.0.0.1:4443')
 API_USERNAME_TOKEN = os.getenv('API_USERNAME_TOKEN', 'abc')
 API_PASSWORD_TOKEN = os.getenv('API_PASSWORD_TOKEN', 'bolinhas')
 
+LOCAL_USERNAME = os.getenv("LOCAL_USERNAME", "adm")
+LOCAL_PASSWORD = os.getenv("LOCAL_PASSWORD", "bolinhas")
+
 API_ENDPOINT_TOKEN = os.getenv('API_ENDPOINT_TOKEN', f'{API_URL}/token/')
 API_ENDPOINT_FUNCIONARIO = os.getenv('API_ENDPOINT_FUNCIONARIO', f'{API_URL}/funcionario/')
 API_ENDPOINT_CLIENTE = os.getenv('API_ENDPOINT_CLIENTE', f'{API_URL}/cliente/')

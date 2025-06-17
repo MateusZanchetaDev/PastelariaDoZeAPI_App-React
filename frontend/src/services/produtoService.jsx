@@ -17,19 +17,24 @@ export const getProdutoById = async (id) => {
 // Criar um novo produto
 // Criar um novo produto
 export const createProduto = async (produto) => {
-  const response = await axios.post(PROXY_URL, produto); // Envia como JSON
-  return response.data;
+  try {
+    const response = await axios.post(PROXY_URL, produto);
+    return response.data;
+  } catch (error) {
+    // Propaga o erro para o catch do onSubmit
+    throw error.response?.data || error;
+  }
 };
 
 // Atualizar um produto existente
 export const updateProduto = async (id, produto) => {
-  const produtoComId = {
-    ...produto,
-    id_produto: id, // importante: backend espera esse campo no body!
-  };
-
-  const response = await axios.put(`${PROXY_URL}`, produtoComId); // sem params!
-  return response.data;
+  try {
+    const produtoComId = { ...produto, id_produto: id };
+    const response = await axios.put(`${PROXY_URL}`, produtoComId);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
 };
 
 // Deletar um produto

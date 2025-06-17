@@ -12,6 +12,7 @@ import 'jspdf-autotable';
 import { PictureAsPdf } from '@mui/icons-material';
 import { getProdutos, deleteProduto } from '../services/produtoService';
 import '../styles/ProdutoList.css';
+import { Box } from '@mui/material';
 
 function ProdutoList() {
 
@@ -27,10 +28,14 @@ function ProdutoList() {
     const fetchProdutos = async () => {
         try {
             const data = await getProdutos();
-            setProdutos(data);
+
+            // Se o retorno for [resultado, status], pegamos o primeiro
+            const resultado = Array.isArray(data) && data.length === 2 ? data[0] : data;
+
+            setProdutos(resultado);
         } catch (error) {
             console.error('Erro ao buscar produtos:', error);
-            toast.error('Erro ao buscar produtos.', { position: 'top-center' });
+            toast.error('Erro ao buscar produtos.');
         }
     };
 
@@ -64,7 +69,7 @@ function ProdutoList() {
         }
     };
 
-    const generatePDF = () => {
+    const GeradorPDF = () => {
         const doc = new jsPDF();
 
         doc.setFontSize(18);
@@ -158,10 +163,12 @@ function ProdutoList() {
 
     return (
         <TableContainer className="Produto-Table" component={Paper}>
-            <Toolbar sx={{ backgroundColor: '#ADD8E6', padding: 2, borderRadius: 1, mb: 2, display: 'flex', justifyContent: 'space-between' }}>
+            <Toolbar sx={{ backgroundColor: '#ADD8E6', padding: 2, borderRadius: 1, mb: 2, display: 'flex', justifyContent: 'space-between' }} >
                 <Typography variant="h6" color="primary">Produtos</Typography>
-                <Button color="primary" onClick={() => navigate('/produto')} startIcon={<FiberNew />}>Novo</Button>
-                <Button color="primary" onClick={generatePDF} startIcon={<PictureAsPdf />}> Exportar PDF </Button>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button color="primary" onClick={() => navigate('/produto')} startIcon={<FiberNew />}> Novo </Button>
+                    <Button color="primary" onClick={GeradorPDF} startIcon={<PictureAsPdf />}> Exportar PDF </Button>
+                </Box>
             </Toolbar>
 
             <Table>

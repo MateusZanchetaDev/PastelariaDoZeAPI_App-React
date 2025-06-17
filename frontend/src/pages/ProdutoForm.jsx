@@ -27,15 +27,24 @@ const ProdutoForm = () => {
     useEffect(() => {
         if (id) {
             const fetchProduto = async () => {
-                const data = await getProdutoById(id);
-                reset(data);
-                if (data.foto) {
-                    setImagemBase64({
-                        data: data.foto,
-                        type: 'image/jpeg' // ou image/png, se seu backend armazenar diferente
-                    });
+                try {
+                    const data = await getProdutoById(id);
+
+                    if (data && data.length > 0) {
+                        reset(data[0]);  // <-- aqui, passar o objeto, não o array todo
+
+                        if (data[0].foto) {
+                            setImagemBase64({
+                                data: data[0].foto,
+                                type: 'image/jpeg'
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro ao buscar produto:', error);
                 }
             };
+
             fetchProduto();
         }
     }, [id, reset]);
@@ -56,30 +65,39 @@ const ProdutoForm = () => {
 
     const onSubmit = async (data) => {
         try {
+            // Monta o objeto que será enviado, puxando os dados do formulário
             const produtoData = {
                 nome: data.nome,
                 descricao: data.descricao,
                 valor_unitario: data.valor_unitario,
-                foto: imagemBase64?.data || "", // usa a base64 se tiver
+                foto: imagemBase64?.data || "", // já temos base64 salvo no estado, usa se disponível
             };
 
-            if (data.foto && data.foto[0]) {
+            // Se o input de foto foi alterado (arquivo novo selecionado), converte para base64 e sobrescreve
+            if (data.foto && data.foto.length > 0) {
                 const fotoBase64 = await convertToBase64(data.foto[0]);
                 produtoData.foto = fotoBase64;
             }
 
             let retorno;
             if (id) {
+                // Atualiza produto existente
                 retorno = await updateProduto(id, produtoData);
             } else {
+                // Cria novo produto
                 retorno = await createProduto(produtoData);
             }
 
-            if (!retorno || !retorno.id) {
-                throw new Error(retorno.erro || "Erro ao salvar produto.");
+            console.log("Retorno raw:", retorno);
+
+            // Extrai o objeto com os dados do retorno, caso seja um array
+            const retornoDados = Array.isArray(retorno) ? retorno[0] : retorno;
+
+            if (!retornoDados || !retornoDados.id) {
+                throw new Error(retornoDados?.erro || "Erro ao salvar produto.");
             }
 
-            toast.success(`Produto salvo com sucesso. ID: ${retorno.id}`, { position: "top-center" });
+            toast.success(`Produto salvo com sucesso. ID: ${retornoDados.id}`, { position: "top-center" });
             navigate('/produtos');
         } catch (error) {
             console.error("Erro no envio: ", error.response ? error.response.data : error.message);
